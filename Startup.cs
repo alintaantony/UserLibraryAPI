@@ -10,11 +10,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using UserLibraryAPI.Repository;
 
 namespace UserLibraryAPI
 {
     public class Startup
     {
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -31,6 +34,15 @@ namespace UserLibraryAPI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "UserLibraryAPI", Version = "v1" });
             });
+            services.AddTransient<IUserLibraryRepo, UserLibraryRepo>();
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: MyAllowSpecificOrigins,
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:3000").AllowAnyHeader().AllowAnyMethod();
+                    });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,6 +56,7 @@ namespace UserLibraryAPI
             }
 
             app.UseRouting();
+            app.UseCors(MyAllowSpecificOrigins);
 
             app.UseAuthorization();
 
